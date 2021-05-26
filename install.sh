@@ -175,7 +175,7 @@ echo
 error_run "Validating login" 'oc whoami'
 if [ "$REMOVE_TOWER" ]; then
     warn_run "Removing Ansible Tower deployment" 'oc delete deploy/ansible-tower --wait -n ansible-tower' ||:
-    warn_run "Removing PostgreSQL database" 'oc delete -f manifests/02-pgcluster.yml' ||:
+    warn_run "Removing PostgreSQL database" 'oc delete -f pgcluster.yml' ||:
     error_run "Waiting for PostgreSQL database to be removed" 'wait_for pgcluster_deleted'
     crunchy_crds=$(oc get crd -l operators.coreos.com/postgresql.ansible-tower="" -o jsonpath='{.items[*] .metadata.name}')
     warn_run "Cleaning up remaining CrunchyData PostgreSQL Operator Resources" 'for crunchy_crd in $crunchy_crds; do oc delete $crunchy_crd --all --wait -n ansible-tower; done' ||:
