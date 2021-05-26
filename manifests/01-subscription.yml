@@ -1,0 +1,21 @@
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: ansible-tower-operatorgroup
+  namespace: ansible-tower
+spec:
+  targetNamespaces:
+  - ansible-tower
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: postgresql
+  namespace: ansible-tower
+spec:
+  channel: stable
+  installPlanApproval: Automatic
+  name: postgresql
+  source: community-operators
+  sourceNamespace: openshift-marketplace

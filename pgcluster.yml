@@ -1,0 +1,54 @@
+---
+apiVersion: crunchydata.com/v1
+kind: Pgcluster
+metadata:
+  name: tower-db
+  labels:
+    crunchy-pgha-scope: tower-db
+    deployment-name: tower-db
+    name: tower-db
+    namespace: ansible-tower
+    pg-cluster: tower-db
+    pgo-version: 4.6.2
+  annotations:
+    current-primary: tower-db
+  namespace: ansible-tower
+spec:
+  port: '5432'
+  exporterport: '9187'
+  clustername: tower-db
+  pgbadgerport: '10000'
+  userlabels:
+    pgo-version: 4.6.2
+  name: tower-db
+  ccpimage: crunchy-postgres-ha
+  ccpimagetag: centos8-13.2-4.6.2
+  PrimaryStorage:
+    accessmode: ReadWriteMany
+    matchLabels: ''
+    name: tower-db
+    size: 5Gi
+    storageclass: ocs-storagecluster-cephfs
+    storagetype: dynamic
+    supplementalgroups: ''
+  database: tower
+  namespace: ansible-tower
+  BackrestStorage:
+    accessmode: ReadWriteMany
+    matchLabels: ''
+    name: ''
+    size: 5Gi
+    storageclass: ocs-storagecluster-cephfs
+    storagetype: dynamic
+    supplementalgroups: ''
+  ReplicaStorage:
+    accessmode: ReadWriteMany
+    matchLabels: ''
+    name: ''
+    size: 5Gi
+    storageclass: ocs-storagecluster-cephfs
+    storagetype: dynamic
+    supplementalgroups: ''
+  podAntiAffinity:
+    default: preferred
+  user: tower
