@@ -183,7 +183,7 @@ if [ "$REMOVE_TOWER" ]; then
     warn_run "Removing CrunchyData PostgreSQL Operator" 'oc delete csv -l operators.coreos.com/postgresql.ansible-tower="" -n ansible-tower' ||:
     warn_run "Removing CrunchyData PostgreSQL Operator CRD's" 'for crunchy_crd in $crunchy_crds; do oc delete crd $crunchy_crd --wait; done' ||:
     warn_run "Removing Ansible Tower namespace" 'oc delete --wait -f manifests/00-namespace.yml' ||:
-
+    echo
     echo "Ansible Tower should be removed!"
     exit
 fi
@@ -262,4 +262,3 @@ echo
 wrap "This is the only time this will be output to the screen, so please ensure you have it saved. Your Ansible Tower admin user's password is: $ADMIN_PASSWORD"
 echo
 wrap "Installation complete! Your instance is accesible at https://$(oc get route ansible-tower-web-svc -o jsonpath={.spec.host})"
-echo
