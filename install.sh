@@ -174,52 +174,74 @@ center_border_text Ansible Tower Installer - OpenShift Helper
 echo
 error_run "Validating login" 'oc whoami'
 if [ "$REMOVE_TOWER" ]; then
-    warn_run "Removing Ansible Tower deployment" 'oc delete deploy/ansible-tower --wait -n ansible-tower' ||:
-    warn_run "Removing PostgreSQL database" 'oc delete -f pgcluster.yml' ||:
-    error_run "Waiting for PostgreSQL database to be removed" 'wait_for pgcluster_deleted'
+    warn_run "Removing Ansible Tower deployment" \
+        'oc delete deploy/ansible-tower --wait -n ansible-tower' ||:
+    warn_run "Removing PostgreSQL database" \
+        'oc delete -f pgcluster.yml' ||:
+    error_run "Waiting for PostgreSQL database to be removed" \
+        'wait_for pgcluster_deleted'
+
     crunchy_crds=$(oc get crd -l operators.coreos.com/postgresql.ansible-tower="" -o jsonpath='{.items[*] .metadata.name}')
-    warn_run "Cleaning up remaining CrunchyData PostgreSQL Operator Resources" 'for crunchy_crd in $crunchy_crds; do oc delete $crunchy_crd --all --wait -n ansible-tower; done' ||:
-    warn_run "Removing CrunchyData PostgreSQL Operator Subscription" 'oc delete --wait -f manifests/01-subscription.yml' ||:
-    warn_run "Removing CrunchyData PostgreSQL Operator" 'oc delete csv -l operators.coreos.com/postgresql.ansible-tower="" -n ansible-tower' ||:
-    warn_run "Removing CrunchyData PostgreSQL Operator CRD's" 'for crunchy_crd in $crunchy_crds; do oc delete crd $crunchy_crd --wait; done' ||:
-    warn_run "Removing Ansible Tower namespace" 'oc delete --wait -f manifests/00-namespace.yml' ||:
+
+    warn_run "Cleaning up remaining CrunchyData PostgreSQL Operator Resources" \
+        'for crunchy_crd in $crunchy_crds; do oc delete $crunchy_crd --all --wait -n ansible-tower; done' ||:
+    warn_run "Removing CrunchyData PostgreSQL Operator Subscription" \
+        'oc delete --wait -f manifests/01-subscription.yml' ||:
+    warn_run "Removing CrunchyData PostgreSQL Operator" \
+        'oc delete csv -l operators.coreos.com/postgresql.ansible-tower="" -n ansible-tower' ||:
+    warn_run "Removing CrunchyData PostgreSQL Operator CRD's" \
+        'for crunchy_crd in $crunchy_crds; do oc delete crd $crunchy_crd --wait; done' ||:
+    warn_run "Removing Ansible Tower namespace" \
+        'oc delete --wait -f manifests/00-namespace.yml' ||:
     echo
     echo "Ansible Tower should be removed!"
     exit
 fi
 
-error_run "Retrieving logged in cluster URL" 'export OPENSHIFT_HOST=$(oc whoami --show-server)'
-error_run "Retrieving logged in user name" 'export OPENSHIFT_USER=$(oc whoami)'
-error_run "Retrieving logged in user token" 'export OPENSHIFT_TOKEN=$(oc whoami --show-token)'
+error_run "Retrieving logged in cluster URL" \
+    'export OPENSHIFT_HOST=$(oc whoami --show-server)'
+error_run "Retrieving logged in user name" \
+    'export OPENSHIFT_USER=$(oc whoami)'
+error_run "Retrieving logged in user token" \
+    'export OPENSHIFT_TOKEN=$(oc whoami --show-token)'
 
 cd downloaded
 
 if ! gpg --list-keys |& grep -qF AC48AC71DA695CA15F2D39C4B84E339C442667A9; then
-    error_run "Receiving Ansible signing key" 'gpg --recv-keys AC48AC71DA695CA15F2D39C4B84E339C442667A9'
+    error_run "Receiving Ansible signing key" \
+        'gpg --recv-keys AC48AC71DA695CA15F2D39C4B84E339C442667A9'
 fi
-error_run "Downloading Ansible Tower Setup checksums" 'curl -sLO https://releases.ansible.com/ansible-tower/setup_openshift/ansible-tower-setup-CHECKSUM'
-error_run "Validating Ansible Tower Setup checksums" 'gpg --verify ansible-tower-setup-CHECKSUM'
-error_run "Extracting Ansible Tower latest tarball checksum" "ANSIBLE_TOWER_SETUP_SUM=\$(grep 'ansible-tower-openshift-setup-latest.tar.gz$' ansible-tower-setup-CHECKSUM | cut -d' ' -f1)"
+error_run "Downloading Ansible Tower Setup checksums" \
+    'curl -sLO https://releases.ansible.com/ansible-tower/setup_openshift/ansible-tower-setup-CHECKSUM'
+error_run "Validating Ansible Tower Setup checksums" \
+    'gpg --verify ansible-tower-setup-CHECKSUM'
+error_run "Extracting Ansible Tower latest tarball checksum" \
+    "ANSIBLE_TOWER_SETUP_SUM=\$(grep 'ansible-tower-openshift-setup-latest.tar.gz$' ansible-tower-setup-CHECKSUM | cut -d' ' -f1)"
 if [ "$ASK_ADMIN_PASSWORD" ]; then
     read -sp "Enter the password to use for the Ansible Tower admin account: " ADMIN_PASSWORD
     export ADMIN_PASSWORD
     echo
 fi
 if [ -z "$ADMIN_PASSWORD" ]; then
-    error_run "Creating new random Ansible Tower admin password" 'export ADMIN_PASSWORD=$(gen_rand)'
+    error_run "Creating new random Ansible Tower admin password" \
+        'export ADMIN_PASSWORD=$(gen_rand)'
 fi
 
 if [ -f ansible-tower-openshift-setup-latest.tar.gz ]; then
-    if ! warn_run "Validating existing download checksum" 'echo "$ANSIBLE_TOWER_SETUP_SUM  ./ansible-tower-openshift-setup-latest.tar.gz" | sha256sum -c -' ; then
-        error_run "Removing old/invalid tarball" 'rm -f ansible-tower-openshift-setup-latest.tar.gz'
+    if ! warn_run "Validating existing download checksum" \
+        'echo "$ANSIBLE_TOWER_SETUP_SUM  ./ansible-tower-openshift-setup-latest.tar.gz" | sha256sum -c -' ; then
+            error_run "Removing old/invalid tarball" \
+                'rm -f ansible-tower-openshift-setup-latest.tar.gz'
     fi
 fi
 if [ ! -f ansible-tower-openshift-setup-latest.tar.gz ]; then
-    error_run "Downloading Ansible Tower latest tarball" 'curl -sLO https://releases.ansible.com/ansible-tower/setup_openshift/ansible-tower-openshift-setup-latest.tar.gz'
+    error_run "Downloading Ansible Tower latest tarball" \
+        'curl -sLO https://releases.ansible.com/ansible-tower/setup_openshift/ansible-tower-openshift-setup-latest.tar.gz'
 fi
 TOWER_INSTALLER_DIR=$(tar tzf ansible-tower-openshift-setup-latest.tar.gz | cut -d/ -f1 | sort -u)
 if [ ! -d "$TOWER_INSTALLER_DIR" ]; then
-    error_run "Unpacking Ansible Tower latest tarball" 'tar xvzf ansible-tower-openshift-setup-latest.tar.gz'
+    error_run "Unpacking Ansible Tower latest tarball" \
+        'tar xvzf ansible-tower-openshift-setup-latest.tar.gz'
 fi
 cd "$TOWER_INSTALLER_DIR"
 TOWER_INSTALLER_VERSION=$(echo "$TOWER_INSTALLER_DIR" | rev | cut -d- -f1-2 | rev)
@@ -247,18 +269,28 @@ EOF
     echo
 fi
 
-error_run "Installing CrunchyData PostgreSQL Operator" 'oc apply -Rf ../../manifests'
-error_run "Creating PostgreSQL database" 'wait_for "oc apply -f ../../pgcluster.yml"'
-error_run "Waiting for PostgreSQL database to be ready" 'wait_for pgcluster_ready'
-error_run "Retrieving Ansible Tower database password" 'export TOWER_DB_PASSWORD=$(oc get secret tower-db-tower-secret -o jsonpath={.data.password} -n ansible-tower | base64 -d)'
-warn_run "Checking for existing Ansible Tower secret key" 'export SECRET_KEY=$(oc get secret ansible-tower-secrets -o jsonpath={.data.secret_key} -n ansible-tower| base64 -d) && [ -n "$SECRET_KEY" ]' ||:
+error_run "Installing CrunchyData PostgreSQL Operator" \
+    'oc apply -Rf ../../manifests'
+error_run "Creating PostgreSQL database" \
+    'wait_for "oc apply -f ../../pgcluster.yml"'
+error_run "Waiting for PostgreSQL database to be ready" \
+    'wait_for pgcluster_ready'
+error_run "Retrieving Ansible Tower database password" \
+    'export TOWER_DB_PASSWORD=$(oc get secret tower-db-tower-secret -o jsonpath={.data.password} -n ansible-tower | base64 -d)'
+warn_run "Checking for existing Ansible Tower secret key" \
+    'export SECRET_KEY=$(oc get secret ansible-tower-secrets -o jsonpath={.data.secret_key} -n ansible-tower| base64 -d) && [ -n "$SECRET_KEY" ]' ||:
 if [ -z "$SECRET_KEY" ]; then
-    error_run "Creating new random Ansible Tower secret key" 'export SECRET_KEY=$(gen_rand)'
+    error_run "Creating new random Ansible Tower secret key" \
+        'export SECRET_KEY=$(gen_rand)'
 fi
-error_run "Writing inventory file for installer" 'cat ../../inventory.template | envsubst > inventory'
-error_run "Installing Ansible Tower" './setup_openshift.sh -- -v'
+error_run "Writing inventory file for installer" \
+    'cat ../../inventory.template | envsubst > inventory'
+error_run "Installing Ansible Tower" \
+    './setup_openshift.sh -- -v'
 
 echo
-wrap "This is the only time this will be output to the screen, so please ensure you have it saved. Your Ansible Tower admin user's password is: $ADMIN_PASSWORD"
+wrap "This is the only time this will be output to the screen, so please ensure you have it saved." \
+    "Your Ansible Tower admin user's password is: $ADMIN_PASSWORD"
 echo
-wrap "Installation complete! Your instance is accesible at https://$(oc get route ansible-tower-web-svc -o jsonpath={.spec.host})"
+wrap "Installation complete! Your instance is accesible at" \
+    "https://$(oc get route ansible-tower-web-svc -o jsonpath={.spec.host})"
