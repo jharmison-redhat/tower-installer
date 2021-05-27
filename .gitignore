@@ -1,3 +1,4 @@
 downloaded/*
 !downloaded/.gitkeep
 *.log
+tags
