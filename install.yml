@@ -1,0 +1,7 @@
+---
+- name: Install Ansible Tower and PostgreSQL via CrunchyData
+  hosts: localhost
+  roles:
+  - role: preflight
+  - role: postgres
+  - role: tower

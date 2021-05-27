@@ -1,0 +1,6 @@
+---
+tower_checksums_file: ansible-tower-setup-CHECKSUM
+tower_checksums_url: https://releases.ansible.com/ansible-tower/setup_openshift/{{ tower_checksums_file }}
+tower_latest_file: ansible-tower-openshift-setup-latest.tar.gz
+tower_latest_url: https://releases.ansible.com/ansible-tower/setup_openshift/{{ tower_latest_file }}
+tower_gpg_key_id: AC48AC71DA695CA15F2D39C4B84E339C442667A9

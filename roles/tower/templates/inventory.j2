@@ -1,0 +1,18 @@
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"
+
+[all:vars]
+admin_user=admin
+admin_password='{{ admin_password }}'
+secret_key='{{ secret_key }}'
+
+pg_hostname={{ db_deployment_name }}.{{ openshift_project }}.svc.cluster.local
+pg_username='{{ db_user }}'
+pg_password='{{ tower_db_password }}'
+pg_database='{{ db_name }}'
+pg_port=5432
+pg_sslmode='prefer'
+
+openshift_host={{ openshift_host }}
+openshift_project={{ openshift_project }}
+openshift_user={{ openshift_user }}
+openshift_token={{ openshift_token }}

@@ -1,0 +1,7 @@
+---
+- name: Retrieve the list of checksums
+  get_url:
+    url: '{{ tower_checksums_url }}'
+    dest: '{{ download_dir }}'
+
+- name: Validate checksums
