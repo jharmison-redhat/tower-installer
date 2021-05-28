@@ -11,3 +11,13 @@
 - name: Save the account token only
   set_fact:
     openshift_token: '{{ openshift_token_raw.stdout }}'
+
+- name: Ensure downloads directory exists
+  file:
+    path: '{{ download_dir }}'
+    state: directory
+
+- name: Ensure that tmp directory exists
+  file:
+    path: '{{ download_tmp }}'
+    state: directory

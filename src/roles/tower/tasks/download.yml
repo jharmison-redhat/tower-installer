@@ -3,6 +3,7 @@
   get_url:
     url: '{{ tower_checksums_url }}'
     dest: '{{ download_dir }}/{{ tower_checksums_file }}'
+    tmp_dest: '{{ download_tmp }}'
 
 - name: Validate checksums
   command: gpg --verify '{{ download_dir }}/{{ tower_checksums_file }}'
@@ -31,6 +32,7 @@
     url: '{{ tower_latest_url }}'
     dest: '{{ download_dir }}/{{ tower_latest_file }}'
     checksum: sha256:{{ tower_latest_checksum }}
+    tmp_dest: '{{ download_tmp }}'
 
 - name: Unpack the latest Ansible Tower installer
   unarchive:
