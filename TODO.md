@@ -11,3 +11,4 @@
 - Toggle for pgo/integrated
 - Validate running from Ansible Tower project for existing Towers, without container
 - Flexible playbook handling - load your Tower settings inside the container
+- Ensure all PGO pods are gone before removing operator (tower_db_pods.resources|length == 0)
