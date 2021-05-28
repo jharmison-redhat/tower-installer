@@ -13,6 +13,7 @@
       private: yes
   vars:
     state: present
+    run_tower_installer: yes
     role_order:
       present:
       - preflight
@@ -61,3 +62,4 @@
             msg: '{{ admin_password }}'
       when:
       - state == "present"
+      - run_tower_installer|bool
