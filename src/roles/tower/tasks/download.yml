@@ -26,7 +26,7 @@
   set_fact:
     tower_latest_version: '{{ tower_latest_dir.split("-")[-2:]|join("-") }}'
 
-- name: Download latest Ansible Tower instlaler
+- name: Download latest Ansible Tower installer
   get_url:
     url: '{{ tower_latest_url }}'
     dest: '{{ download_dir }}/{{ tower_latest_file }}'
