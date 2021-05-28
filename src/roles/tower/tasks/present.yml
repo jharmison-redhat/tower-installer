@@ -10,6 +10,6 @@
 
 - name: Save the Ansible Tower secret key
   set_fact:
-    secret_key: '{{ tower_secret.resources[0].data.secret_key|base64decode }}'
+    secret_key: '{{ tower_secret.resources[0].data.secret_key|b64decode }}'
   when:
   - tower_secret.resources|length > 0
