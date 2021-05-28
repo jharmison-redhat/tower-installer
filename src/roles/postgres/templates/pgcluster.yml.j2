@@ -14,7 +14,7 @@ metadata:
     current-primary: {{ db_deployment_name }}
   namespace: {{ openshift_project }}
 spec:
-  port: '5432'
+  port: '{{ pg_port }}'
   exporterport: '9187'
   clustername: {{ db_deployment_name }}
   pgbadgerport: '10000'
@@ -31,7 +31,7 @@ spec:
     storageclass: {{ storageclass }}
     storagetype: dynamic
     supplementalgroups: ''
-  database: {{ db_name }}
+  database: {{ pg_database }}
   namespace: {{ openshift_project }}
   BackrestStorage:
     accessmode: ReadWriteMany
@@ -51,4 +51,4 @@ spec:
     supplementalgroups: ''
   podAntiAffinity:
     default: preferred
-  user: {{ db_user }}
+  user: {{ pg_username }}

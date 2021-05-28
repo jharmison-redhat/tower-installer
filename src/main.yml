@@ -1,0 +1,51 @@
+---
+- name: Set Ansible Tower and PostgreSQL to {{ state|default("present") }}
+  hosts: cluster
+  vars_prompt:
+    - name: openshift_host
+      prompt: What is the API endpoint of the OpenShift cluster?
+      private: no
+    - name: openshift_user
+      prompt: What is your OpenShift user name?
+      private: no
+    - name: openshift_password
+      prompt: What is your OpenShift password?
+      private: yes
+  vars:
+    state: present
+    role_order:
+      present:
+      - preflight
+      - project
+      - postgres
+      - tower
+      absent:
+      - preflight
+      - tower
+      - postgres
+      - project
+  tasks:
+    - include_role:
+        name: '{{ role }}'
+      loop: '{{ role_order[state] }}'
+      loop_control:
+        loop_var: role
+
+    - block:
+        - name: Load installer variables
+          include_vars: '{{ download_dir }}/{{ tower_latest_dir }}/group_vars/all'
+
+        - name: Load installer roles
+          include_role:
+            name: '{{ download_dir }}/{{ tower_latest_dir }}/roles/{{ role }}'
+          loop:
+          - preflight
+          - kubernetes
+          loop_control:
+            loop_var: role
+
+        - name: Output the admin password
+          debug:
+            msg: '{{ admin_password }}'
+      when:
+      - state == "present"

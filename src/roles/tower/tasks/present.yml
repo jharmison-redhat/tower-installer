@@ -1,0 +1,15 @@
+---
+- include_tasks: download.yml
+
+- name: Check for existing Ansible Tower secret key
+  community.kubernetes.k8s_info:
+    kind: Secret
+    name: ansible-tower-secrets
+    namespace: '{{ openshift_project }}'
+  register: tower_secret
+
+- name: Save the Ansible Tower secret key
+  set_fact:
+    secret_key: '{{ tower_secret.resources[0].data.secret_key|base64decode }}'
+  when:
+  - tower_secret.resources|length > 0

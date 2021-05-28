@@ -1,0 +1,38 @@
+---
+- name: Subscribe to CrunchyData PostgreSQL Operator
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    definition: '{{ lookup("template", "subscription.yml.j2") }}'
+    wait: yes
+
+- name: Create {{ db_deployment_name }} Pgcluster
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    definition: '{{ lookup("template", "pgcluster.yml.j2") }}'
+    wait: yes
+  register: pgcluster_creation
+  retries: 10
+  until: not pgcluster_creation.failed
+
+- name: Wait for {{ db_deployment_name }} Pgcluster to be ready
+  community.kubernetes.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: '{{ db_deployment_name }}'
+    namespace: '{{ openshift_project }}'
+    wait: yes
+  register: db_deployment
+  retries: 10
+  until: ((db_deployment.resources[0]|default({})).status|default({})).readyReplicas|default(0) > 0
+
+- name: Recover {{ pg_username }} password
+  community.kubernetes.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: '{{ db_deployment_name }}-{{ pg_username }}-secret'
+    namespace: '{{ openshift_project }}'
+  register: db_secret
+
+- name: Parse and save {{ pg_username }} password
+  set_fact:
+    pg_password: '{{ db_secret.resources[0].data.password|b64decode }}'

@@ -1,0 +1,13 @@
+---
+- name: Remove all {{ crd.crd.metadata.name }} instances
+  community.kubernetes.k8s:
+    api_version: '{{ crd.crd.apiVersion }}'
+    kind: '{{ crd.crd.kind }}'
+    name: '{{ cr.metadata.name }}'
+    namespace: '{{ cr.metadata.namespace|default(omit) }}'
+    state: absent
+    wait: yes
+  loop: '{{ crd.resources }}'
+  loop_control:
+    loop_var: cr
+    label: '{{ cr.metadata.name }}'

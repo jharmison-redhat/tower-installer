@@ -1,0 +1,6 @@
+---
+pv_size: 5Gi
+pgo_version: 4.6.2
+
+# When uninstalling, also remove all of the CRD's?
+force_remove: yes

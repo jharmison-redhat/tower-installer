@@ -1,0 +1,13 @@
+---
+- name: Log in to cluster
+  command: "oc login {{ openshift_extra_args }} -u {{ openshift_user }} -p '{{ openshift_password }}' {{ openshift_host }}"
+  changed_when: false
+
+- name: Recover an account token
+  command: oc whoami -t
+  changed_when: false
+  register: openshift_token_raw
+
+- name: Save the account token only
+  set_fact:
+    openshift_token: '{{ openshift_token_raw.stdout }}'

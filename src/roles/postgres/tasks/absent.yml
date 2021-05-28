@@ -1,0 +1,74 @@
+---
+- name: Remove {{ db_deployment_name }} Pgcluster
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    definition: '{{ lookup("template", "pgcluster.yml.j2") }}'
+    wait: yes
+  ignore_errors: yes
+
+- block:
+    - name: Enumerate all PGO CRD types
+      community.kubernetes.k8s_info:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        label_selectors:
+          - operators.coreos.com/postgresql.ansible-tower
+      register: pgo_crds
+
+    - name: Enumerate all PGO CRD instances
+      community.kubernetes.k8s_info:
+        kind: '{{ crd.spec.names.kind }}'
+      register: pgo_crs
+      loop: '{{ pgo_crds.resources }}'
+      loop_control:
+        loop_var: crd
+        label: '{{ crd.metadata.name }}'
+
+    - name: Remove all PGO CRD instances
+      include_tasks: clean.yml
+      loop: '{{ pgo_crs.results }}'
+      loop_control:
+        loop_var: crd
+        label: '{{ crd.crd.metadata.name }}'
+  when: force_remove
+
+- name: Unsubscribe from CrunchyData PostgreSQL Operator
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    definition: '{{ lookup("template", "subscription.yml.j2") }}'
+    wait: yes
+
+- name: Identify CrunchyData PostgreSQL Operator CSV
+  community.kubernetes.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: '{{ openshift_project }}'
+    label_selectors:
+      - operators.coreos.com/postgresql.ansible-tower
+  register: pgo_csvs
+
+- name: Uninstall CrunchyData PostgreSQL Operator CSV
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: '{{ openshift_project }}'
+    name: '{{ csv.metadata.name }}'
+  loop: '{{ pgo_csvs.resources }}'
+  loop_control:
+    loop_var: csv
+    label: '{{ csv.metadata.name }}'
+
+- block:
+    - name: Remove all PGO CRDs
+      community.kubernetes.k8s:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        name: '{{ crd.metadata.name }}'
+        state: absent
+        wait: yes
+      loop: '{{ pgo_crds.resources }}'
+      loop_control:
+        loop_var: crd
+        label: '{{ crd.metadata.name }}'
+  when: force_remove

@@ -1,0 +1,39 @@
+---
+- name: Retrieve the list of checksums
+  get_url:
+    url: '{{ tower_checksums_url }}'
+    dest: '{{ download_dir }}/{{ tower_checksums_file }}'
+
+- name: Validate checksums
+  command: gpg --verify '{{ download_dir }}/{{ tower_checksums_file }}'
+  changed_when: false
+
+- name: Extract latest tarball checksum
+  set_fact:
+    tower_latest_checksum: '{{ (checksum_content|regex_search(latest_regex, multiline=True)).split()|first }}'
+  vars:
+    checksum_content: '{{ lookup("file", download_dir + "/" + tower_checksums_file) }}'
+    latest_regex: '^.*ansible-tower-openshift-setup-latest.tar.gz$'
+
+- name: Extract latest release directory
+  set_fact:
+    tower_latest_dir: '{{ (checksum_content|regex_search(latest_regex, multiline=True)).split()|last|replace(".tar.gz","") }}'
+  vars:
+    checksum_content: '{{ lookup("file", download_dir + "/" + tower_checksums_file) }}'
+    latest_regex: '^{{ tower_latest_checksum }}.*$'
+
+- name: Extract latest release version
+  set_fact:
+    tower_latest_version: '{{ tower_latest_dir.split("-")[-2:]|join("-") }}'
+
+- name: Download latest Ansible Tower instlaler
+  get_url:
+    url: '{{ tower_latest_url }}'
+    dest: '{{ download_dir }}/{{ tower_latest_file }}'
+    checksum: sha256:{{ tower_latest_checksum }}
+
+- name: Unpack the latest Ansible Tower installer
+  unarchive:
+    src: '{{ download_dir }}/{{ tower_latest_file }}'
+    dest: '{{ download_dir }}'
+    remote_src: yes

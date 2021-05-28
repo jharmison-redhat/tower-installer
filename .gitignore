@@ -1,4 +1,5 @@
 downloaded/*
 !downloaded/.gitkeep
+collections
 *.log
 tags

@@ -1,0 +1,6 @@
+---
+- name: Ensure namespace is set to {{ state }}
+  community.kubernetes.k8s:
+    state: '{{ state }}'
+    definition: '{{ lookup("template", "namespace.yml.j2") }}'
+    wait: yes

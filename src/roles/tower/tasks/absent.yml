@@ -1,0 +1,9 @@
+---
+- name: Remove Ansible Tower deployment
+  community.kubernetes.k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: ansible-tower
+    namespace: '{{ openshift_project }}'
+    state: absent
+    wait: yes
