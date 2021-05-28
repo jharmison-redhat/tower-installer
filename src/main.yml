@@ -44,6 +44,18 @@
           loop_control:
             loop_var: role
 
+        - name: Subscribe Tower using pre-staged manifest
+          awx.awx.tower_license:
+            eula_accepted: yes
+            manifest: '{{ item }}'
+            tower_host: ansible-tower-web-svc-{{ openshift_project }}.{{ openshift_router }}
+            tower_username: '{{ admin_user }}'
+            tower_password: '{{ admin_password }}'
+          vars:
+            openshift_router: 'apps.{{ (openshift_host|replace("https://api.","")).split(":")|first }}'
+          with_fileglob:
+            - '{{ download_dir }}/manifest_*.zip'
+
         - name: Output the admin password
           debug:
             msg: '{{ admin_password }}'
